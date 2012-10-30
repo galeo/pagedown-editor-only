@@ -19,3 +19,6 @@ The editor:
 Content preview:
 
 ![Content-Preview](https://raw.github.com/galeo/pagedown-editor-only/master/static/images/preview.png)
+
+
+**Note**: Only tested in Chrome and Safari.

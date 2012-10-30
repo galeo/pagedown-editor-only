@@ -5,6 +5,8 @@ is simple too(too simple) that we may want a more powerful one. And I think the 
 
 I delete the code of Pagedown's JavaScript Markdown converter and live previewer. To preview the markdown content user-inputted, in this demo, the markdown content will be sent to the server with AJAX and converted at the server side, then get back the HTML and render the HTML content into the page. Bootstrap is used to control the page style.
 
+To resize the textarea of the editor(just like what StackOverFlow does), I use a script from [here](https://github.com/vasanth-v/Jquery-textarea-resize-autogrow).
+
 The 'preview.py' file is just the one which is used in [Argic](https://www.github.com/galeo/argic).
 
 To see the demo, you need to install [web.py](http://www.webpy.org), [misaka](http://misaka.61924.nl/) and [pygments](http://www.pygments.org). Execute the command `python server.py` or `./server.py` in Terminal and visit the address `http://0.0.0.0:8080/`.

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PageDown Demo Page</title>
+  
+  <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="/static/css/highlighting.css">
+  <link rel="stylesheet" type="text/css" href="/static/css/demo.css" />
+  <script type="text/javascript" src="/static/js/jquery-1.7.2.min.js"></script>
+  <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="/static/js/hycus-textarea.js"></script>
+  <script type="text/javascript" src="/static/js/Markdown.Editor.js"></script>
+  <script type="text/javascript">
+    (function (m) {
+      m(document).ready(function () {
+        m('textarea.wmd-input').TextAreaResizer();
+      });
+    })(jQuery);
+  </script>
+</head>
+    
+<body>
+  <div class="container">
+      <div id="pagedwon">
+        <div id="tabnav">
+          <ul class="nav nav-tabs" id="markdown_tab" style="padding: 0 10px; margin-bottom: 10px;">
+            <li class="active"><a href="#edit" data-toggle="tab">Edit</a></li>
+            <li><a href="#markdownpreview" data-toggle="tab">Preview</a></li>
+          </ul>
+        </div>
+
+        <div class="tab-content">
+          <div class="tab-pane active" id="edit">
+            <div class="wmd-panel">
+              <div id="wmd-button-bar"></div>
+<textarea class="wmd-input" id="wmd-input" rows="10">
+This is the *pagedown* editor.
+------------------------------
+
+**Note**: Just plain **Markdown**, except that the input is sanitized: **HTML** is not allowed.
+</textarea>
+            </div>
+            <script type="text/javascript">
+              (function () {
+                  var pagedown_editor = new Markdown.Editor();
+                  pagedown_editor.run();
+              })();
+            </script>
+
+            <script type="text/javascript">
+              (function (m) {
+                m("#markdown_tab a").click(function () {
+                  if (m(this).html() == "Preview"){
+                    var markdown_content = m("#wmd-input").val();
+                    if (!markdown_content) {
+                      m("div#markdownpreview").html("Empty Markdown Content.");
+                    } else {
+                      content_to_preview = {
+                        "data": markdown_content
+                      }
+                      m.post("/", content_to_preview)
+                        .success( function(preview_content){
+                          if (preview_content == 'None'){
+                            m("div#markdownpreview").html("No content received.");
+                          } else {
+                            m("div#markdownpreview").html(preview_content);
+                          }
+                        })
+                        .error( function () {
+                          m("div#markdownpreview").html("Sorry, error occurred. Please retry.");
+                        });
+                    }
+                  }
+                });
+              })(jQuery);
+            </script>
+          </div>
+
+          <div class="tab-pane markdown-body" id="markdownpreview">
+            Loding preview content ...
+          </div>
+        </div>
+      </div>
+  </div>
+</body>
+</html>

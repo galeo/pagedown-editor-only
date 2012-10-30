@@ -1,5 +1,7 @@
 ﻿// needs Markdown.Converter.js at the moment
 
+var Markdown = {};
+
 (function () {
 
     var util = {},
@@ -71,6 +73,53 @@
     //  END OF YOUR CHANGES
     // -------------------------------------------------------------------
 
+
+    // Plugin hooks - Copied from Markdwon.Converter.js file
+
+    // Descriptions from "https://code.google.com/p/pagedown/wiki/PageDown":
+    // The functionality is of the category "simplest thing that works",
+    // so don't expect too much magic. The two (important) methods on this object are:
+    
+    // - hooks.set(hookname, func) registers the given function as a plugin on the given hook.
+    // Any previously registered plugins on the same hook are lost.
+    
+    // - hooks.chain(hookname, func) registers the given function as the next plugin 
+    // on the given hook; e.g. the second registered function will be called with the
+    // output of the first registered function as its only argument.
+    // This does not make sense on all plugin hooks. 
+    function identity(x) { return x; }
+    function returnFalse(x) { return false; }
+    
+    function HookCollection() { }
+
+    HookCollection.prototype = {
+
+        chain: function (hookname, func) {
+            var original = this[hookname];
+            if (!original)
+                throw new Error("unknown hook " + hookname);
+
+            if (original === identity)
+                this[hookname] = func;
+            else
+                this[hookname] = function (x) { return func(original(x)); }
+        },
+        set: function (hookname, func) {
+            if (!this[hookname])
+                throw new Error("unknown hook " + hookname);
+            this[hookname] = func;
+        },
+        addNoop: function (hookname) {
+            this[hookname] = identity;
+        },
+        addFalse: function (hookname) {
+            this[hookname] = returnFalse;
+        }
+    };
+
+    Markdown.HookCollection = HookCollection;
+
+
     // options, if given, can have the following properties:
     //   options.helpButton = { handler: yourEventHandler }
     //   options.strings = { italicexample: "slanted text" }
@@ -86,10 +135,8 @@
     // `helpButton.title`. This should be considered legacy.
     //
     // The constructed editor object has the methods:
-    // - getConverter() returns the markdown converter object that was passed to the constructor
     // - run() actually starts the editor; should be called after all necessary plugins are registered. Calling this more than once is a no-op.
-    // - refreshPreview() forces the preview to be updated. This method is only available after run() was called.
-    Markdown.Editor = function (markdownConverter, idPostfix, options) {
+    Markdown.Editor = function (idPostfix, options) {
         
         options = options || {};
 
@@ -105,14 +152,11 @@
         idPostfix = idPostfix || "";
 
         var hooks = this.hooks = new Markdown.HookCollection();
-        hooks.addNoop("onPreviewRefresh");       // called with no arguments after the preview has been refreshed
         hooks.addNoop("postBlockquoteCreation"); // called with the user's selection *after* the blockquote was created; should return the actual to-be-inserted text
         hooks.addFalse("insertImageDialog");     /* called with one parameter: a callback to be called with the URL of the image. If the application creates
                                                   * its own image insertion dialog, this hook should return true, and the callback should be called with the chosen
                                                   * image url (or null if the user cancelled). If this hook returns false, the default dialog will be used.
                                                   */
-
-        this.getConverter = function () { return markdownConverter; }
 
         var that = this,
             panels;
@@ -123,28 +167,22 @@
 
             panels = new PanelCollection(idPostfix);
             var commandManager = new CommandManager(hooks, getString);
-            var previewManager = new PreviewManager(markdownConverter, panels, function () { hooks.onPreviewRefresh(); });
             var undoManager, uiManager;
 
             if (!/\?noundo/.test(doc.location.href)) {
                 undoManager = new UndoManager(function () {
-                    previewManager.refresh();
                     if (uiManager) // not available on the first call
                         uiManager.setUndoRedoButtonStates();
                 }, panels);
                 this.textOperation = function (f) {
                     undoManager.setCommandMode();
                     f();
-                    that.refreshPreview();
                 }
             }
 
-            uiManager = new UIManager(idPostfix, panels, undoManager, previewManager, commandManager, options.helpButton, getString);
+            uiManager = new UIManager(idPostfix, panels, undoManager, commandManager, options.helpButton, getString);
             uiManager.setUndoRedoButtonStates();
 
-            var forceRefresh = that.refreshPreview = function () { previewManager.refresh(true); };
-
-            forceRefresh();
         };
 
     }
@@ -820,200 +858,6 @@
         this.init();
     };
 
-    function PreviewManager(converter, panels, previewRefreshCallback) {
-
-        var managerObj = this;
-        var timeout;
-        var elapsedTime;
-        var oldInputText;
-        var maxDelay = 3000;
-        var startType = "delayed"; // The other legal value is "manual"
-
-        // Adds event listeners to elements
-        var setupEvents = function (inputElem, listener) {
-
-            util.addEvent(inputElem, "input", listener);
-            inputElem.onpaste = listener;
-            inputElem.ondrop = listener;
-
-            util.addEvent(inputElem, "keypress", listener);
-            util.addEvent(inputElem, "keydown", listener);
-        };
-
-        var getDocScrollTop = function () {
-
-            var result = 0;
-
-            if (window.innerHeight) {
-                result = window.pageYOffset;
-            }
-            else
-                if (doc.documentElement && doc.documentElement.scrollTop) {
-                    result = doc.documentElement.scrollTop;
-                }
-                else
-                    if (doc.body) {
-                        result = doc.body.scrollTop;
-                    }
-
-            return result;
-        };
-
-        var makePreviewHtml = function () {
-
-            // If there is no registered preview panel
-            // there is nothing to do.
-            if (!panels.preview)
-                return;
-
-
-            var text = panels.input.value;
-            if (text && text == oldInputText) {
-                return; // Input text hasn't changed.
-            }
-            else {
-                oldInputText = text;
-            }
-
-            var prevTime = new Date().getTime();
-
-            text = converter.makeHtml(text);
-
-            // Calculate the processing time of the HTML creation.
-            // It's used as the delay time in the event listener.
-            var currTime = new Date().getTime();
-            elapsedTime = currTime - prevTime;
-
-            pushPreviewHtml(text);
-        };
-
-        // setTimeout is already used.  Used as an event listener.
-        var applyTimeout = function () {
-
-            if (timeout) {
-                clearTimeout(timeout);
-                timeout = undefined;
-            }
-
-            if (startType !== "manual") {
-
-                var delay = 0;
-
-                if (startType === "delayed") {
-                    delay = elapsedTime;
-                }
-
-                if (delay > maxDelay) {
-                    delay = maxDelay;
-                }
-                timeout = setTimeout(makePreviewHtml, delay);
-            }
-        };
-
-        var getScaleFactor = function (panel) {
-            if (panel.scrollHeight <= panel.clientHeight) {
-                return 1;
-            }
-            return panel.scrollTop / (panel.scrollHeight - panel.clientHeight);
-        };
-
-        var setPanelScrollTops = function () {
-            if (panels.preview) {
-                panels.preview.scrollTop = (panels.preview.scrollHeight - panels.preview.clientHeight) * getScaleFactor(panels.preview);
-            }
-        };
-
-        this.refresh = function (requiresRefresh) {
-
-            if (requiresRefresh) {
-                oldInputText = "";
-                makePreviewHtml();
-            }
-            else {
-                applyTimeout();
-            }
-        };
-
-        this.processingTime = function () {
-            return elapsedTime;
-        };
-
-        var isFirstTimeFilled = true;
-
-        // IE doesn't let you use innerHTML if the element is contained somewhere in a table
-        // (which is the case for inline editing) -- in that case, detach the element, set the
-        // value, and reattach. Yes, that *is* ridiculous.
-        var ieSafePreviewSet = function (text) {
-            var preview = panels.preview;
-            var parent = preview.parentNode;
-            var sibling = preview.nextSibling;
-            parent.removeChild(preview);
-            preview.innerHTML = text;
-            if (!sibling)
-                parent.appendChild(preview);
-            else
-                parent.insertBefore(preview, sibling);
-        }
-
-        var nonSuckyBrowserPreviewSet = function (text) {
-            panels.preview.innerHTML = text;
-        }
-
-        var previewSetter;
-
-        var previewSet = function (text) {
-            if (previewSetter)
-                return previewSetter(text);
-
-            try {
-                nonSuckyBrowserPreviewSet(text);
-                previewSetter = nonSuckyBrowserPreviewSet;
-            } catch (e) {
-                previewSetter = ieSafePreviewSet;
-                previewSetter(text);
-            }
-        };
-
-        var pushPreviewHtml = function (text) {
-
-            var emptyTop = position.getTop(panels.input) - getDocScrollTop();
-
-            if (panels.preview) {
-                previewSet(text);
-                previewRefreshCallback();
-            }
-
-            setPanelScrollTops();
-
-            if (isFirstTimeFilled) {
-                isFirstTimeFilled = false;
-                return;
-            }
-
-            var fullTop = position.getTop(panels.input) - getDocScrollTop();
-
-            if (uaSniffed.isIE) {
-                setTimeout(function () {
-                    window.scrollBy(0, fullTop - emptyTop);
-                }, 0);
-            }
-            else {
-                window.scrollBy(0, fullTop - emptyTop);
-            }
-        };
-
-        var init = function () {
-
-            setupEvents(panels.input, applyTimeout);
-            makePreviewHtml();
-
-            if (panels.preview) {
-                panels.preview.scrollTop = 0;
-            }
-        };
-
-        init();
-    };
 
     // Creates the background behind the hyperlink text entry box.
     // And download dialog
@@ -1212,7 +1056,7 @@
         }, 0);
     };
 
-    function UIManager(postfix, panels, undoManager, previewManager, commandManager, helpOptions, getString) {
+    function UIManager(postfix, panels, undoManager, commandManager, helpOptions, getString) {
 
         var inputBox = panels.input,
             buttons = {}; // buttons.undo, buttons.link, etc. The actual DOM elements.
@@ -1358,7 +1202,6 @@
                     }
 
                     state.restore();
-                    previewManager.refresh();
                 };
 
                 var noCleanup = button.textOp(chunks, fixupInputArea);

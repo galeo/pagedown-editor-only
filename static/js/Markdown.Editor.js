@@ -79,17 +79,17 @@ var Markdown = {};
     // Descriptions from "https://code.google.com/p/pagedown/wiki/PageDown":
     // The functionality is of the category "simplest thing that works",
     // so don't expect too much magic. The two (important) methods on this object are:
-    
+
     // - hooks.set(hookname, func) registers the given function as a plugin on the given hook.
     // Any previously registered plugins on the same hook are lost.
-    
-    // - hooks.chain(hookname, func) registers the given function as the next plugin 
+
+    // - hooks.chain(hookname, func) registers the given function as the next plugin
     // on the given hook; e.g. the second registered function will be called with the
     // output of the first registered function as its only argument.
-    // This does not make sense on all plugin hooks. 
+    // This does not make sense on all plugin hooks.
     function identity(x) { return x; }
     function returnFalse(x) { return false; }
-    
+
     function HookCollection() { }
 
     HookCollection.prototype = {
@@ -137,7 +137,7 @@ var Markdown = {};
     // The constructed editor object has the methods:
     // - run() actually starts the editor; should be called after all necessary plugins are registered. Calling this more than once is a no-op.
     Markdown.Editor = function (idPostfix, options) {
-        
+
         options = options || {};
 
         if (typeof options.handler === "function") { //backwards compatible behavior
@@ -867,9 +867,9 @@ var Markdown = {};
 
         var background = doc.createElement("div"),
             style = background.style;
-        
+
         background.className = "wmd-prompt-background";
-        
+
         style.position = "absolute";
         style.top = "0";
 
@@ -1559,7 +1559,7 @@ var Markdown = {};
 
         }
         else {
-            
+
             // We're moving start and end tag back into the selection, since (as we're in the else block) we're not
             // *removing* a link, but *adding* one, so whatever findTags() found is now back to being part of the
             // link text. linkEnteredCallback takes care of escaping any brackets.
@@ -1597,7 +1597,7 @@ var Markdown = {};
                     // would mean a zero-width match at the start. Since zero-width matches advance the string position,
                     // the first bracket could then not act as the "not a backslash" for the second.
                     chunk.selection = (" " + chunk.selection).replace(/([^\\](?:\\\\)*)(?=[[\]])/g, "$1\\").substr(1);
-                    
+
                     var linkDef = " [999]: " + properlyEncoded(link);
 
                     var num = that.addLinkDef(chunk, linkDef);
@@ -1639,7 +1639,7 @@ var Markdown = {};
         chunk.before = chunk.before.replace(/(\n|^)[ ]{0,3}([*+-]|\d+[.])[ \t]*\n$/, "\n\n");
         chunk.before = chunk.before.replace(/(\n|^)[ ]{0,3}>[ \t]*\n$/, "\n\n");
         chunk.before = chunk.before.replace(/(\n|^)[ \t]+\n$/, "\n\n");
-        
+
         // There's no selection, end the cursor wasn't at the end of the line:
         // The user wants to split the current list item / code line / blockquote line
         // (for the latter it doesn't really matter) in two. Temporarily select the
@@ -1667,7 +1667,7 @@ var Markdown = {};
                 commandMgr.doCode(chunk);
             }
         }
-        
+
         if (fakeSelection) {
             chunk.after = chunk.selection + chunk.after;
             chunk.selection = "";
@@ -1857,7 +1857,7 @@ var Markdown = {};
                         chunk.before += "    ";
                 }
                 else {
-                    chunk.selection = chunk.selection.replace(/^[ ]{4}/gm, "");
+                    chunk.selection = chunk.selection.replace(/^(?:[ ]{4}|[ ]{0,3}\t)/gm, "");
                 }
             }
         }

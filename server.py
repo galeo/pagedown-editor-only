@@ -3,11 +3,41 @@
 
 
 import web
-import preview
+import mdparser
 
 
 markdown_demo = web.template.frender('demo.html')
 
+
+MISAKA_DEFAULTS = {
+    'extensions': [
+        'fenced_code',
+        'no_intra_emphasis',
+        'tables',
+        'autolink',
+        'space_headers',
+        'strikethrough',
+        'superscript'
+    ],
+    'render_flags': ['safelink', 'skip_html']
+}
+
+HOEP_DEFAULTS = {
+    'extensions': [
+        'autolink',
+        'fenced_code',
+        'footnotes',
+        'no_intra_emphasis',
+        'strikethrough',
+        'tables',
+        'space_headers',
+        'superscript'
+    ],
+    'render_flags': ['safelink', 'skip_html', 'smartypants']
+}
+
+m_renderer = mdparser.MarkupProvider('misaka', MISAKA_DEFAULTS).get_renderer()
+h_renderer = mdparser.MarkupProvider('hoep', HOEP_DEFAULTS).get_renderer()
 
 class MarkdownPreview():
     """
@@ -18,7 +48,13 @@ class MarkdownPreview():
 
     def POST(self):
         markdown_content = web.input()
-        post_preview = preview.markdown(markdown_content['data'])
+
+        # use the Misaka markdown parser
+        post_preview = m_renderer(markdown_content['data'])
+
+        # use the Hoep markdown parser
+        # post_preview = h_renderer(markdown_content['data'])
+
         return post_preview
 
 app = web.application()

@@ -145,33 +145,32 @@ try:
 
     MISAKA_EXTS_FLAGS = {
         'extensions': {
-            'autolink':          misaka.EXT_AUTOLINK,
-            'fenced_code':       misaka.EXT_FENCED_CODE,
-            'lax_html_blocks':   misaka.EXT_LAX_HTML_BLOCKS,
-            'no_intra_emphasis': misaka.EXT_NO_INTRA_EMPHASIS,
-            'space_headers':     misaka.EXT_SPACE_HEADERS,
-            'strikethrough':     misaka.EXT_STRIKETHROUGH,
-            'superscript':       misaka.EXT_SUPERSCRIPT,
-            'tables':            misaka.EXT_TABLES,
+            'tables':                misaka.EXT_TABLES,
+            'fenced_code':           misaka.EXT_FENCED_CODE,
+            'footnotes':             misaka.EXT_FOOTNOTES,
+            'autolink':              misaka.EXT_AUTOLINK,
+            'strikethrough':         misaka.EXT_STRIKETHROUGH,
+            'underline':      	     misaka.EXT_UNDERLINE,
+            'highlight':	         misaka.EXT_HIGHLIGHT,
+            'quote':	             misaka.EXT_QUOTE,
+            'superscript':           misaka.EXT_SUPERSCRIPT,
+            'math':          	     misaka.EXT_MATH,
+            'no_intra_emphasis':     misaka.EXT_NO_INTRA_EMPHASIS,
+            'space_headers':         misaka.EXT_SPACE_HEADERS,
+            'math_explicit':	     misaka.EXT_MATH_EXPLICIT,
+            'disable_indented_code': misaka.EXT_DISABLE_INDENTED_CODE
         },
         'render_flags': {
-            'expand_tabs':       misaka.HTML_EXPAND_TABS,
-            'hard_wrap':         misaka.HTML_HARD_WRAP,
-            'safelink':          misaka.HTML_SAFELINK,
-            'skip_html':         misaka.HTML_SKIP_HTML,
-            'skip_images':       misaka.HTML_SKIP_IMAGES,
-            'skip_links':        misaka.HTML_SKIP_LINKS,
-            'skip_style':        misaka.HTML_SKIP_STYLE,
-            'smartypants':       misaka.HTML_SMARTYPANTS,
-            'toc':               misaka.HTML_TOC,
-            'toc_tree':          misaka.HTML_TOC_TREE,
-            'use_xhtml':         misaka.HTML_USE_XHTML,
+            'skip_html': misaka.HTML_SKIP_HTML,
+            'escape':    misaka.HTML_ESCAPE,
+            'hard_wrap': misaka.HTML_HARD_WRAP,
+            'use_xhtml': misaka.HTML_USE_XHTML,
         }
     }
 
     class MisakaRenderer(HtmlRenderer):
         if HAVE_PYGMENTS:
-            def block_code(self, text, lang):
+            def blockcode(self, text, lang):
                 return hl_with_pygments(text, lang)
 
         def table(self, header, body):

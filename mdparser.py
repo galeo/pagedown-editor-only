@@ -61,10 +61,18 @@ def halt(message, *args):
 #
 
 # Tables with bootstrap
-def tablestrap(header, body):
-    return ''.join(['<table class="table table-responsive table-striped table-bordered">\n',
-                    header, '\n', body,
-                    '\n</table>'])
+def tablestrap(content, class_=''):
+    if class_:
+        class_ = class_.split()
+    if isinstance(class_, list):
+        if 'table' not in class_:
+            class_ = ['table'] + class_
+        class_ = ' '.join(class_)
+    if class_:
+        class_ = 'class="%s"' % class_
+    return ''.join(['<table ', class_, '>\n',
+                    content, '\n</table>'])
+
 
 # Pygments.
 
@@ -169,21 +177,25 @@ try:
     }
 
     class MisakaRenderer(HtmlRenderer):
+        def __init__(self, tbl_class='', *args, **kwargs):
+            super(MisakaRenderer, self).__init__(*args, **kwargs)
+            self.tbl_class = tbl_class
+
         if HAVE_PYGMENTS:
             def blockcode(self, text, lang):
                 return hl_with_pygments(text, lang)
 
-        def table(self, header, body):
-            return tablestrap(header, body)
+        def table(self, content):
+            return tablestrap(content, self.tbl_class)
 
-    def misaka_renderer(options):
+    def misaka_renderer(options, tbl_class=''):
         """
         Returns a function that can be used to transform Markdown to HTML
         using Misaka, preconfigured with the given extensions/flags.
         """
         Renderer = MisakaRenderer
         used_exts, used_flags = xlate_exts_flags(options, MISAKA_EXTS_FLAGS)
-        return misaka.Markdown(Renderer(used_flags), used_exts).render
+        return misaka.Markdown(Renderer(tbl_class, used_flags), used_exts)
 
     MARKUP_RENDERERS['misaka'] = {
         'renderer': misaka_renderer,
@@ -236,7 +248,7 @@ try:
     }
 
     class HoepRenderer(h.Hoep):
-        def __init__(self, extensions=0, render_flags=0):
+        def __init__(self, extensions=0, render_flags=0, tbl_class=''):
             super(HoepRenderer, self).__init__(extensions, render_flags)
 
             self._toc_ids = {}
@@ -248,6 +260,8 @@ try:
                 (r'^$', 'section')
             )
 
+            self.tbl_class = tbl_class
+
         if HAVE_PYGMENTS:
             def block_code(self, text, lang):
                 """Highlight code with pygments.
@@ -255,7 +269,8 @@ try:
                 return hl_with_pygments(text, lang)
 
         def table(self, header, body):
-            return tablestrap(header, body)
+            content = header + body
+            return tablestrap(content, self.tbl_class)
 
         def header(self, text, level):
             if self.render_flags & h.HTML_TOC:
@@ -280,13 +295,13 @@ try:
             self._toc_ids.clear()
             return markdown
 
-    def hoep_renderer(options):
+    def hoep_renderer(options, **kwargs):
         """
         Returns a function that can be used to transform Markdown to HTML
         using Hoep, preconfigured with the given extensions/flags.
         """
         used_exts, used_flags = xlate_exts_flags(options, HOEP_EXTS_FLAGS)
-        return HoepRenderer(used_exts, used_flags).render
+        return HoepRenderer(used_exts, used_flags, **kwargs).render
 
     MARKUP_RENDERERS['hoep'] = {
         'renderer': hoep_renderer,
@@ -324,7 +339,7 @@ class MarkupProvider(object):
         else:
             return self.options[option]
 
-    def get_renderer(self, markup_options={}):
+    def get_renderer(self, markup_options={}, **kwargs):
         """
         Will return a function to render the item content
         based on the options specified in it. All unspecified
@@ -334,4 +349,4 @@ class MarkupProvider(object):
         for option in MARKUP_RENDERERS[self.markup]['options']:
             options[option] = self._get_option(option, markup_options)
 
-        return MARKUP_RENDERERS[self.markup]['renderer'](options)
+        return MARKUP_RENDERERS[self.markup]['renderer'](options, **kwargs)

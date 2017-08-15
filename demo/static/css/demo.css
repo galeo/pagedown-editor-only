@@ -39,6 +39,7 @@ textarea.wmd-input {
 div.grippie {
     background: url("/static/images/grippie.png") no-repeat scroll center 2px rgb(238, 238, 238);
     margin: 0;
+    margin-top: -5px;
     padding: 0 3px;
     border: 1px solid #ddd;
     border-width: 0pt 1px 1px;

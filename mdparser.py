@@ -95,10 +95,11 @@ def require_pygments():
     if not HAVE_PYGMENTS:
         error("please, install Pygments <http://pygments.org/>.")
 
-def hl_with_pygments(text, lang):
+
+def hl_with_pygments(text, lang, fmt_options={}):
     s = ''
 
-    formatter = HtmlFormatter()
+    formatter = HtmlFormatter(**fmt_options)
     try:
         lexer = get_lexer_by_name(lang, stripall=True)
     except ValueError:
@@ -177,25 +178,26 @@ try:
     }
 
     class MisakaRenderer(HtmlRenderer):
-        def __init__(self, tbl_class='', *args, **kwargs):
+        def __init__(self, tbl_class='', fmt_options={}, *args, **kwargs):
             super(MisakaRenderer, self).__init__(*args, **kwargs)
             self.tbl_class = tbl_class
+            self.fmt_options = fmt_options
 
         if HAVE_PYGMENTS:
             def blockcode(self, text, lang):
-                return hl_with_pygments(text, lang)
+                return hl_with_pygments(text, lang, self.fmt_options)
 
         def table(self, content):
             return tablestrap(content, self.tbl_class)
 
-    def misaka_renderer(options, tbl_class=''):
+    def misaka_renderer(options, tbl_class='', fmt_options={}):
         """
         Returns a function that can be used to transform Markdown to HTML
         using Misaka, preconfigured with the given extensions/flags.
         """
         Renderer = MisakaRenderer
         used_exts, used_flags = xlate_exts_flags(options, MISAKA_EXTS_FLAGS)
-        return misaka.Markdown(Renderer(tbl_class, used_flags), used_exts)
+        return misaka.Markdown(Renderer(tbl_class, fmt_options, used_flags), used_exts)
 
     MARKUP_RENDERERS['misaka'] = {
         'renderer': misaka_renderer,
@@ -248,7 +250,8 @@ try:
     }
 
     class HoepRenderer(h.Hoep):
-        def __init__(self, extensions=0, render_flags=0, tbl_class=''):
+        def __init__(self, extensions=0, render_flags=0, tbl_class='',
+                     fmt_options={}):
             super(HoepRenderer, self).__init__(extensions, render_flags)
 
             self._toc_ids = {}
@@ -261,12 +264,13 @@ try:
             )
 
             self.tbl_class = tbl_class
+            self.fmt_options = fmt_options
 
         if HAVE_PYGMENTS:
             def block_code(self, text, lang):
                 """Highlight code with pygments.
                 """
-                return hl_with_pygments(text, lang)
+                return hl_with_pygments(text, lang, self.fmt_options)
 
         def table(self, header, body):
             content = header + body

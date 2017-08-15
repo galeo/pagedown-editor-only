@@ -1,10 +1,11 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 
+import sys
+sys.path.append('..')
 
 import web
-import mdparser
-
+from mdparser import MarkupProvider
 
 markdown_demo = web.template.frender('demo.html')
 
@@ -39,11 +40,11 @@ HOEP_DEFAULTS = {
 
 TABLE_CLASS = 'table table-striped table-bordered table-hover'
 
-m_renderer = (mdparser.MarkupProvider('misaka', MISAKA_DEFAULTS)
+m_renderer = (MarkupProvider('misaka', MISAKA_DEFAULTS)
               .get_renderer(tbl_class=TABLE_CLASS, fmt_options={
                   'linenos': 'table'
               }))
-h_renderer = (mdparser.MarkupProvider('hoep', HOEP_DEFAULTS)
+h_renderer = (MarkupProvider('hoep', HOEP_DEFAULTS)
               .get_renderer(tbl_class=TABLE_CLASS, fmt_options={
                   'linenos': 'table'
               }))

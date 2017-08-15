@@ -24,11 +24,15 @@ a script from [~~here~~](https://github.com/vasanth-v/Jquery-textarea-resize-aut
 + [hoep](https://github.com/Anomareh/Hoep) (**optional**)
 
 
-## Installation
+## Run the demo app
 
 You could use `pip` to install all the required python packages:
 
 ```pip install -U web.py pygments misaka hoep```
+
+or
+
+```pip install -r requirements.txt```
 
 And then execute the command `python server.py` or `./server.py` in terminal and
 visit the address `http://0.0.0.0:8080/`. (**Note**: Only tested in *Chrome* and *Safari*.)
@@ -38,8 +42,8 @@ visit the address `http://0.0.0.0:8080/`. (**Note**: Only tested in *Chrome* and
 
 The editor:
 
-![Pagedown-Editor](https://raw.github.com/galeo/pagedown-editor-only/master/static/images/pagedown.png)
+![Pagedown-Editor](https://raw.github.com/galeo/pagedown-editor-only/master/demo/static/images/pagedown.png)
 
 Content preview:
 
-![Content-Preview](https://raw.github.com/galeo/pagedown-editor-only/master/static/images/preview.png)
+![Content-Preview](https://raw.github.com/galeo/pagedown-editor-only/master/demo/static/images/preview.png)

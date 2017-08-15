@@ -12,6 +12,7 @@ markdown_demo = web.template.frender('demo.html')
 MISAKA_DEFAULTS = {
     'extensions': [
         'fenced_code',
+        'highlight',
         'no_intra_emphasis',
         'tables',
         'autolink',
@@ -19,7 +20,7 @@ MISAKA_DEFAULTS = {
         'strikethrough',
         'superscript'
     ],
-    'render_flags': ['safelink', 'skip_html']
+    'render_flags': ['skip_html']
 }
 
 HOEP_DEFAULTS = {
@@ -36,8 +37,17 @@ HOEP_DEFAULTS = {
     'render_flags': ['safelink', 'skip_html', 'smartypants']
 }
 
-m_renderer = mdparser.MarkupProvider('misaka', MISAKA_DEFAULTS).get_renderer()
-h_renderer = mdparser.MarkupProvider('hoep', HOEP_DEFAULTS).get_renderer()
+TABLE_CLASS = 'table table-striped table-bordered table-hover'
+
+m_renderer = (mdparser.MarkupProvider('misaka', MISAKA_DEFAULTS)
+              .get_renderer(tbl_class=TABLE_CLASS, fmt_options={
+                  'linenos': 'table'
+              }))
+h_renderer = (mdparser.MarkupProvider('hoep', HOEP_DEFAULTS)
+              .get_renderer(tbl_class=TABLE_CLASS, fmt_options={
+                  'linenos': 'table'
+              }))
+
 
 class MarkdownPreview():
     """
@@ -56,6 +66,7 @@ class MarkdownPreview():
         # post_preview = h_renderer(markdown_content['data'])
 
         return post_preview
+
 
 app = web.application()
 app.add_mapping('/', MarkdownPreview)

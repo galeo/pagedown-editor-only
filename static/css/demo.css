@@ -1,5 +1,5 @@
-body 
-{ 
+body
+{
     padding: 10px;
     background-color: White;
     font-family: sans-serif;
@@ -16,10 +16,10 @@ body
     min-width: 500px;
 }
 
-.wmd-button-bar 
+.wmd-button-bar
 {
     width: 100%;
-    background-color: Silver; 
+    background-color: Silver;
 }
 
 textarea.wmd-input {
@@ -48,26 +48,26 @@ div.grippie {
     background-color: #eee;
 }
 
-.wmd-button-row 
+.wmd-button-row
 {
-    position: relative; 
+    position: relative;
     margin-left: 0;
     margin-right: 0;
     margin-bottom: 5px;
     margin-top: 10px;
-    padding: 0px;  
+    padding: 0px;
     height: 20px;
 }
 
 .wmd-spacer
 {
-    width: 1px; 
-    height: 20px; 
+    width: 1px;
+    height: 20px;
     margin-left: 14px;
-    
+
     position: absolute;
     background-color: Silver;
-    display: inline-block; 
+    display: inline-block;
     list-style: none;
 }
 
@@ -134,4 +134,15 @@ div.grippie {
     font-family: trebuchet MS, helvetica, sans-serif;
     font-size: 0.8em;
     font-weight: bold;
+}
+
+.linenodiv pre {
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.code pre {
+    border-left: 0;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
 }

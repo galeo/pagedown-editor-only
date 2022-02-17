@@ -21,7 +21,7 @@ a script from [~~here~~](https://github.com/vasanth-v/Jquery-textarea-resize-aut
 + [web.py](http://www.webpy.org)
 + [pygments](http://pygments.org)
 + [misaka](http://misaka.61924.nl/)
-+ [hoep](https://github.com/Anomareh/Hoep) (**optional**)
++ [hoep](https://github.com/Anomareh/Hoep)
 
 
 ## Run the demo app
@@ -34,8 +34,8 @@ or
 
 ```pip install -r requirements.txt```
 
-And then execute the command `python server.py` or `./server.py` in terminal and
-visit the address `http://0.0.0.0:8080/`. (**Note**: Only tested in *Chrome* and *Safari*.)
+And then execute the command `python server.py 127.0.0.1:8080` or `./server.py 127.0.0.1:8080` in terminal and
+visit the address `http://127.0.0.1:8080/`. (**Note**: Only tested in *Chrome* and *Safari*.)
 
 
 ## Screenshots
